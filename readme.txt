@@ -1,5 +1,5 @@
 === Dashboard Master - Clean and Custom Dashboard Multisite ===
-Contributors: mastermusica
+Contributors: Lelia Salles
 Tags: dashboard, multisite, custom widgets, admin notices, adblocker, clean dashboard
 Requires at least: 5.8
 Tested up to: 6.5

@@ -1,11 +1,11 @@
 === Dashboard Master - Clean and Custom Dashboard Multisite ===
-Contributors: Lelia Salles
+Contributors: mastermusica
 Tags: dashboard, multisite, custom widgets, admin notices, adblocker, clean dashboard
 Requires at least: 5.8
 Tested up to: 6.5
 Stable tag: 9.3
 Requires PHP: 7.4
-License: GPLv3 or later
+License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
 Take back control of your WordPress dashboard. Create global and local custom widgets, block annoying admin notices, and clean up your network.
@@ -22,7 +22,7 @@ Designed specifically for Multisite networks (but fully functional on single sit
 *   **Local Subsite Widgets:** Local administrators can create up to 6 custom widgets specifically for their site.
 *   **Role-Based Visibility:** *New!* Local admins can restrict who sees each custom widget based on user roles (e.g., show a "Quick Links" widget only to Subscribers, and a "Metrics" widget only to Editors).
 *   **Smart AdBlocker for Admin Notices:** Automatically intercepts and hides aggressive promotional banners and upsells from third-party themes and plugins (looking for keywords like "upgrade", "premium", "sale", "seja pro"), while keeping legitimate system success/error messages visible to your team.
-*   **X-Ray Mode:** A powerful toggle button in the top Admin Bar (exclusive to Admins and Super Admins) that instantly reveals all hidden notices for auditing purposes with a single click.
+*   **Show/Hide:** A powerful toggle button in the top Admin Bar (exclusive to Admins and Super Admins) that instantly reveals all hidden notices for auditing purposes with a single click.
 *   **Welcome Panel Eraser:** Permanently destroys the massive native "Welcome to WordPress" panel.
 *   **YouTube Embed Fix:** Automatically injects the correct referrer policies to fix YouTube iframe error 153 on the dashboard.
 
@@ -55,17 +55,8 @@ Yes! While built with Multisite architecture in mind, single-site administrators
 
 1. The clean and organized Dashboard Master management interface.
 2. Role-based visibility selection for local widgets.
-3. The X-Ray Mode button in action on the Admin Bar.
+3. The Show/Hide Notices Mode button in action on the Admin Bar.
 
-== Changelog ==
-
-= 9.3 =
-* Feature: Added Role-Based Visibility for local widgets (select which user roles can see each specific block).
-* Feature: Introduced X-Ray Mode (Admin Bar toggle to reveal hidden notices).
-* Feature: Introduced Smart AdBlocker (JavaScript-based text scanner to eliminate aggressive marketing banners).
-* Tweak: Improved Multisite Global vs Local saving architecture.
-* Fix: Prevented CSS conflicts with H5P and other functional plugins.
-* Fix: Automatic Welcome Panel removal.
 
 = 1.0 =
 * Initial release.

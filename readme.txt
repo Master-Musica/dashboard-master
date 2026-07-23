@@ -44,7 +44,7 @@ Most "white label" plugins are heavy, bloated, and break other plugins by aggres
 It ensures a pristine, distraction-free environment for your students, teachers, and authors, while giving administrators the X-Ray tools they need to monitor the system.
 
 Installation
-Upload the plugin files to the /wp-content/plugins/dashboard-master directory, or install the plugin directly through the WordPress plugins screen.
+Upload the plugin files to the /wp-content/mu-plugins/dashboard-master directory
 
 Activate the plugin. (If using Multisite, "Network Activate" the plugin).
 

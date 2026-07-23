@@ -5,7 +5,7 @@ Requires at least: 5.8
 Tested up to: 6.5
 Stable tag: 9.3
 Requires PHP: 7.4
-License: GPLv2 or later
+License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
 Take back control of your WordPress dashboard. Create global and local custom widgets, block annoying admin notices, and clean up your network.

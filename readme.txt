@@ -8,31 +8,66 @@ Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-# Dashboard Master – Clean and Custom Dashboard Multisite
+Dashboard Master - Clean and Custom Dashboard Multisite
+Take back control of your WordPress dashboard. Create global and local custom widgets, block annoying admin notices, and clean up your network.
 
-[cite_start]Dashboard Master is a lightweight, highly focused WordPress plugin designed specifically for Multisite networks[cite: 2074]. [cite_start]It transforms the default, cluttered WordPress admin dashboard into a clean, communication-focused hub[cite: 2075]. [cite_start]By hiding native distractions and aggressive third-party advertisements, it allows network administrators to transmit clear instructions to subsite managers without them getting lost in unnecessary system settings[cite: 2076].
+Description
+Is your WordPress dashboard cluttered with aggressive upsells, unnecessary ads, and confusing default widgets? Dashboard Master - Clean and Custom Dashboard Multisite is the ultimate architectural solution to transform your native WP dashboard into a clean, focused, and powerful communication hub.
 
-## Key Features
+Designed specifically for Multisite networks (but fully functional on single sites), this plugin completely wipes out the native dashboard clutter and replaces it with a highly customizable widget system governed by strict access rules.
 
-* [cite_start]**Hybrid Widget Management:** Empowers Super Admins to set 2 fixed global widgets mirrored automatically across the entire network, while giving local subsite Admins the freedom to create up to 6 custom local blocks[cite: 2077].
-* [cite_start]**Smart AdBlocker (JavaScript Engine):** Employs an intelligent JavaScript scanner that hunts for promotional keywords (like "premium", "upgrade", or "sale") to dynamically hide aggressive upsells from plugins and themes (e.g., Elementor, LearnPress, PMPro)[cite: 2078]. [cite_start]Crucially, it preserves legitimate, functional notices (such as H5P success messages) intact[cite: 2079].
-* [cite_start]**X-Ray Mode:** A unique toggle button in the admin bar available exclusively for Admins and Super Admins[cite: 2080]. [cite_start]It instantly reveals all hidden notices and blocked banners for quick auditing, without breaking the layout or the security nonces of the plugins[cite: 2081].
-* [cite_start]**Role-Based Visibility:** Local administrators can configure exactly which user roles (Subscribers, Editors, Authors, etc.) are allowed to view specific custom widgets, allowing for highly targeted communication[cite: 2082].
-* [cite_start]**Deep White-Labeling:** Aggressively simplifies the user interface by removing all native WordPress dashboard widgets, the "Help" tab, and "Screen Options"[cite: 2083]. [cite_start]It also customizes the admin footer to display a tailored brand signature while hiding the WordPress version[cite: 2084].
-* [cite_start]**Safe Media & Embeds:** Automatically corrects YouTube cross-origin iframe errors (Error 153) by injecting strict referrer policies[cite: 2085]. [cite_start]It ensures embedded videos and iframes are fully responsive, safely sanitized, and perfectly aligned[cite: 2086].
-* [cite_start]**Internationalization (i18n):** Fully prepared for global distribution with native support for English and Brazilian Portuguese, adhering to strict WordPress.org translation standards[cite: 2087].
+Core Features
 
-## Architecture & Security
+Global Network Widgets: Super Admins can set up 2 global dashboard widgets that are permanently pinned across all subsites in the network. Perfect for network-wide announcements or onboarding.
 
-[cite_start]Unlike heavy, bloated white-labeling alternatives, Dashboard Master operates as a highly precise "scalpel"[cite: 2088].
 
-* [cite_start]**Scope Isolation:** Aggressive widget removal runs strictly on the index.php dashboard page to prevent functional conflicts with other complex plugins[cite: 2089].
-* [cite_start]**Rigorous Sanitization:** Uses wp_kses based on user capabilities to safely allow iframes and media embeds through the database while blocking malicious script injections[cite: 2090].
-* [cite_start]**Non-Destructive Storage:** Separates data logic cleanly, utilizing update_site_option for global data and update_option for local subsite data[cite: 2091].
+Local Subsite Widgets: Local administrators can create up to 6 custom widgets specifically for their site.
 
-## Installation for Multisite
 
-1. [cite_start]Download the .zip file from the repository[cite: 2092].
-2. [cite_start]In your WordPress network admin panel, navigate to **My Sites > Network Admin > Plugins**[cite: 2093].
-3. [cite_start]Click **Add New** and upload the .zip file[cite: 2094].
-4. [cite_start]Once installed, click **Network Activate**[cite: 2095]. [cite_start]The plugin will instantly take effect across all subsites without local admins being able to deactivate it[cite: 2095].
+Role-Based Visibility: New! Local admins can restrict who sees each custom widget based on user roles (e.g., show a "Quick Links" widget only to Subscribers, and a "Metrics" widget only to Editors).
+
+
+Smart AdBlocker for Admin Notices: Automatically intercepts and hides aggressive promotional banners and upsells from third-party themes and plugins (looking for keywords like "upgrade", "premium", "sale", "seja pro"), while keeping legitimate system success/error messages visible to your team.
+
+
+Show/Hide: A powerful toggle button in the top Admin Bar (exclusive to Admins and Super Admins) that instantly reveals all hidden notices for auditing purposes with a single click.
+
+
+Welcome Panel Eraser: Permanently destroys the massive native "Welcome to WordPress" panel.
+
+
+YouTube Embed Fix: Automatically injects the correct referrer policies to fix YouTube iframe error 153 on the dashboard.
+
+Why Dashboard Master?
+Most "white label" plugins are heavy, bloated, and break other plugins by aggressively removing PHP hooks. Dashboard Master acts like a scalpel: it uses intelligent JavaScript and CSS scoping to hide ads without breaking the functional buttons of complex plugins like H5P, WooCommerce, or PMPro.
+
+It ensures a pristine, distraction-free environment for your students, teachers, and authors, while giving administrators the X-Ray tools they need to monitor the system.
+
+Installation
+Upload the plugin files to the /wp-content/plugins/dashboard-master directory, or install the plugin directly through the WordPress plugins screen.
+
+Activate the plugin. (If using Multisite, "Network Activate" the plugin).
+
+Navigate to the new Dashboard Master menu in your WordPress admin sidebar.
+
+If you are a Super Admin, fill in your Global Blocks.
+
+Add your Local Blocks, select which User Roles can see them, and save!
+
+Frequently Asked Questions
+Does it hide ALL admin notices? No. Our Smart AdBlocker targets specific promotional CSS classes and scans the text for marketing keywords. Legitimate feedback notices (like "Post saved successfully") will still appear, ensuring your site remains functional.
+
+I need to read a blocked notice. What do I do? Simply click the "Mostrar Avisos" (Show Notices) button with the eye icon located in the top black Admin Bar. This X-Ray mode will temporarily reveal all blocked notices. This button is only visible to Administrators and Super Admins.
+
+Does it work on standard Single Site WordPress? Yes! While built with Multisite architecture in mind, single-site administrators can fully utilize the widget creator and the Smart AdBlocker.
+
+Screenshots
+The clean and organized Dashboard Master management interface.
+
+Role-based visibility selection for local widgets.
+
+The Show/Hide Notices Mode button in action on the Admin Bar.
+
+Changelog
+Version 1.0
+Initial release.

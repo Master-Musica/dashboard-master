@@ -79,6 +79,12 @@ function dashboard_master_save_settings() {
             }
         }
 
+        // SALVAR AS PALAVRAS DO ADBLOCKER (Acesso para Admins e Super Admins)
+        if ( isset( $_POST['dashboard_master_adblock_words'] ) ) {
+            $words_clean = sanitize_textarea_field( wp_unslash( $_POST['dashboard_master_adblock_words'] ) );
+            update_option( 'dashboard_master_adblock_words', $words_clean );
+        }
+
         // LOCAL SAVING
         $sanitized_widgets = array();
         if ( isset( $_POST['custom_widgets'] ) && is_array( $_POST['custom_widgets'] ) ) {
@@ -134,6 +140,10 @@ function dashboard_master_render_page() {
 
     $welcome_content = get_site_option( 'dashboard_global_welcome', $default_welcome );
     $global_2_content = get_site_option( 'dashboard_global_secondary', $default_global_2 );
+
+    // Carregar palavras do banco de dados
+    $default_adblock_words = 'upgrade, premium, limited time offer, discount, sale, unlock all features, learnpress lms is ready, envothemes, addons, superb addons, simple nova, envo one, free woocommerce, pmpro update manager, secure updates for pmpro, license server, seja pro, atualizar agora, crie sem limites, versão pro, obter suporte';
+    $adblock_words = get_option( 'dashboard_master_adblock_words', $default_adblock_words );
     ?>
     <div class="wrap">
         <h1><?php esc_html_e( 'Dashboard Widget Manager', 'dashboard-master' ); ?></h1>
@@ -240,6 +250,11 @@ function dashboard_master_render_page() {
             </p>
 
             <hr style="margin-top: 30px;">
+
+            <h2>🛑 <?php esc_html_e( 'Smart AdBlocker Filter', 'dashboard-master' ); ?></h2>
+            <p><?php esc_html_e( 'Enter the keywords the system should block (comma separated):', 'dashboard-master' ); ?></p>
+            <textarea name="dashboard_master_adblock_words" rows="3" class="widefat" style="margin-bottom: 20px;"><?php echo esc_textarea( $adblock_words ); ?></textarea>
+
             <?php submit_button( __( 'Save Dashboard Changes', 'dashboard-master' ) ); ?>
         </form>
     </div>
@@ -420,16 +435,19 @@ function dashboard_master_advanced_adblock_css() {
 
 add_action( 'admin_footer', 'dashboard_master_internal_adblock_js', 999 );
 function dashboard_master_internal_adblock_js() {
+    // 1. Busca as palavras no banco de dados
+    $default_words = 'upgrade, premium, limited time offer, discount, sale, unlock all features, learnpress lms is ready, envothemes, addons, superb addons, simple nova, envo one, free woocommerce, pmpro update manager, secure updates for pmpro, license server, seja pro, atualizar agora, crie sem limites, versão pro, obter suporte';
+    $saved_words = get_option( 'dashboard_master_adblock_words', $default_words );
+    
+    // 2. Separa por vírgula e limpa os espaços vazios
+    $words_array = array_filter( array_map( 'trim', explode( ',', strtolower( $saved_words ) ) ) );
+    
+    // 3. Converte para formato JSON que o JS entenda
+    $words_json = wp_json_encode( array_values( $words_array ) );
     ?>
     <script>
     document.addEventListener('DOMContentLoaded', function() {
-        var blockedWords = [
-            'upgrade', 'premium', 'limited time offer', 'discount', 'sale',
-            'unlock all features', 'learnpress lms is ready', 'envothemes', 'addons',   
-            'superb addons', 'simple nova', 'envo one', 'free woocommerce',
-            'pmpro update manager', 'secure updates for pmpro', 'license server',
-            'seja pro', 'atualizar agora', 'crie sem limites', 'versão pro', 'obter suporte'
-        ];
+        var blockedWords = <?php echo $words_json; ?>;
         
         function annihilateAds() {
             var notices = document.querySelectorAll('.wrap > div, .notice, .updated, .error, div[class*="notice"], div[class*="message"]');

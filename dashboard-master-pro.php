@@ -77,6 +77,11 @@ function dashboard_master_save_settings() {
                 $global_2_clean = current_user_can( 'unfiltered_html' ) ? $global_2_raw : wp_kses( $global_2_raw, $allowed_html );
                 update_site_option( 'dashboard_global_secondary', $global_2_clean );
             }
+            if ( isset( $_POST['dashboard_global_footer'] ) ) {
+                $footer_raw = wp_unslash( $_POST['dashboard_global_footer'] );
+                $footer_clean = current_user_can( 'unfiltered_html' ) ? $footer_raw : wp_kses( $footer_raw, $allowed_html );
+                update_site_option( 'dashboard_global_footer', $footer_clean );
+            }
         }
 
         // SALVAR AS PALAVRAS DO ADBLOCKER (Acesso para Admins e Super Admins)
@@ -137,9 +142,11 @@ function dashboard_master_render_page() {
     
     $default_welcome = '<div style="padding: 10px;"><h3>' . __( 'Hello! Need help with your site?', 'dashboard-master' ) . '</h3><p>' . __( 'This is your dashboard.', 'dashboard-master' ) . '</p></div>';
     $default_global_2 = '<div style="padding: 10px;"><h3>' . __( 'Important Notices', 'dashboard-master' ) . '</h3><p>' . __( 'Space reserved for the network.', 'dashboard-master' ) . '</p></div>';
+    $default_footer = sprintf( __( 'Managed by %s.', 'dashboard-master' ), '<a href="https://www.mastermusica.com.br" target="_blank">Master Musica</a>' );
 
     $welcome_content = get_site_option( 'dashboard_global_welcome', $default_welcome );
     $global_2_content = get_site_option( 'dashboard_global_secondary', $default_global_2 );
+    $footer_content = get_site_option( 'dashboard_global_footer', $default_footer );
 
     // Carregar palavras do banco de dados
     $default_adblock_words = 'upgrade, premium, limited time offer, discount, sale, unlock all features, learnpress lms is ready, envothemes, addons, superb addons, simple nova, envo one, free woocommerce, pmpro update manager, secure updates for pmpro, license server, seja pro, atualizar agora, crie sem limites, versão pro, obter suporte';
@@ -187,9 +194,21 @@ function dashboard_master_render_page() {
                     </div>
                 <?php endif; ?>
             </div>
-            
+
             <?php if ( is_super_admin() ) : ?>
-                <p style="color: #d63638;"><strong><?php esc_html_e( 'Super Admin Attention:', 'dashboard-master' ); ?></strong> <?php esc_html_e( 'The content of these two blocks will be fixed and displayed across all subsites in the network.', 'dashboard-master' ); ?></p>
+                <div class="card" style="max-width: 100%; margin-top: 20px; padding: 15px 20px; border-left: 4px solid #d63638;">
+                    <h2><?php esc_html_e( 'Global Admin Footer', 'dashboard-master' ); ?></h2>
+                    <p><?php esc_html_e( 'Customize the footer text displayed at the bottom of the admin panel across the entire network.', 'dashboard-master' ); ?></p>
+                    <?php wp_editor( $footer_content, 'dashboard_global_footer', array( 'textarea_rows' => 3, 'media_buttons' => true ) ); ?>
+                </div>
+                <p style="color: #d63638;"><strong><?php esc_html_e( 'Super Admin Attention:', 'dashboard-master' ); ?></strong> <?php esc_html_e( 'The content of these blocks and footer will be fixed and displayed across all subsites in the network.', 'dashboard-master' ); ?></p>
+            <?php else : ?>
+                <div class="card" style="max-width: 100%; margin-top: 20px; padding: 15px 20px; background: #f6f7f7;">
+                    <h2><?php esc_html_e( 'Global Admin Footer', 'dashboard-master' ); ?></h2>
+                    <div style="border: 1px solid #ccc; padding: 15px; background: #fff; border-radius: 4px; pointer-events: none; opacity: 0.8;">
+                        <?php echo wp_kses_post( $footer_content ); ?>
+                    </div>
+                </div>
             <?php endif; ?>
 
             <h2 style="margin-top: 30px;"><?php printf( esc_html__( 'Your Local Blocks (%d/6)', 'dashboard-master' ), $widget_count ); ?></h2>
@@ -405,7 +424,6 @@ function dashboard_master_add_xray_button( $wp_admin_bar ) {
     }
 }
 
-// SOLUÇÃO: CSS corrigido. Remoção de curingas ("*=") que quebravam classes do WordPress
 add_action( 'admin_head', 'dashboard_master_advanced_adblock_css', 999 );
 function dashboard_master_advanced_adblock_css() {
     echo '<style>
@@ -516,10 +534,12 @@ function dashboard_master_remove_help_tabs() {
 
 add_filter( 'admin_footer_text', 'dashboard_master_custom_footer' );
 function dashboard_master_custom_footer() {
-    printf( 
+    $default_footer = sprintf( 
         __( 'Managed by %s.', 'dashboard-master' ), 
         '<a href="https://www.mastermusica.com.br" target="_blank">Master Musica</a>' 
     );
+    $footer_content = get_site_option( 'dashboard_global_footer', $default_footer );
+    echo wp_kses_post( $footer_content );
 }
 
 add_filter( 'update_footer', '__return_empty_string', 9999 );

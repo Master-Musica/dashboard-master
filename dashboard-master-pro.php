@@ -3,7 +3,7 @@
 Plugin Name: Dashboard Master - Clean and Custom Dashboard Multisite
 Plugin URI: https://www.mastermusica.com.br
 Description: Widget manager. 2 fixed global blocks (Super Admin) and up to 6 local blocks. Fixes for videos and embeds.
-Version: 9.3
+Version: 1.1
 Author: Master Musica
 Author URI: https://www.mastermusica.com.br
 License: GPLv2 or later

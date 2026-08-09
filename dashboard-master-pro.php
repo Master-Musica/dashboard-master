@@ -397,10 +397,12 @@ function dashboard_master_remove_native_welcome_panel() {
     remove_action( 'welcome_panel', 'wp_welcome_panel' );
 }
 
+/** remove all admin notices */
 add_action( 'admin_head-index.php', 'dashboard_master_remove_dashboard_notices', 99 );
 function dashboard_master_remove_dashboard_notices() {
-    //remove_all_actions( 'admin_notices' ); //remove all admin notices
-    //remove_all_actions( 'all_admin_notices' ); //remove all admin notices
+    remove_all_actions( 'admin_notices' ); 
+    remove_all_actions( 'all_admin_notices' ); 
+
 }
 
 add_action( 'admin_init', 'dashboard_master_remove_core_notices_users' );

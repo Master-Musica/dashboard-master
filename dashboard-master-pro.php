@@ -467,6 +467,9 @@ function dashboard_master_internal_adblock_js() {
             '.error', 
             'div[class*="notice"]', 
             'div[class*="message"]'
+            'div[id*="learn-press"]', 
+            'div[class*="elementor"]', 
+            'div[id*="elementor"]'
         ];
 
         for (var j = 0; j < blockedWords.length; j++) {

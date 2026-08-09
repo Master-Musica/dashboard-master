@@ -480,7 +480,7 @@ function dashboard_master_internal_adblock_js() {
         var finalSelectorString = querySelectors.join(', ');
 
         function annihilateAds() {
-            var notices = document.querySelectorAll(finalSelectorString);
+    var notices = document.querySelectorAll(finalSelectorString);
             
             notices.forEach(function(notice) {
                 

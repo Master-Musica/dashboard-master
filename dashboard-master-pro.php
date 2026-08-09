@@ -456,36 +456,37 @@ function dashboard_master_internal_adblock_js() {
     $words_array = array_filter( array_map( 'trim', explode( ',', strtolower( $saved_words ) ) ) );
     $words_json = wp_json_encode( array_values( $words_array ) );
     ?>
-    <script>
+   <script>
     document.addEventListener('DOMContentLoaded', function() {
         var blockedWords = <?php echo $words_json; ?>;
         
+        !
         var querySelectors = [
-            '.wrap > div', 
-            '.notice', 
-            '.updated', 
-            '.error', 
-            'div[class*="notice"]', 
-            'div[class*="message"]'
-            'div[id*="learn-press"]', 
-            'div[class*="elementor"]', 
-            'div[id*="elementor"]'
+            
+            '#wpbody-content > div:not(.wrap):not(#screen-meta):not(#screen-meta-links)',
+            
+            
+            '.wrap > div:not(#dashboard-widgets-wrap):not(#poststuff):not(.card):not(#list-widgets-container)',
+            
+            '[class*="notice"]', 
+            '[class*="message"]',
+            '[class*="alert"]',
+            '[class*="banner"]',
+            '[class*="promo"]',
+            '[class*="upgrade"]',
+            '[class*="warning"]',
+            '[class*="upsell"]',
+            '.is-dismissible',
+            '[id*="notice"]',
+            '[id*="message"]',
+            '[id*="banner"]'
         ];
-
-        for (var j = 0; j < blockedWords.length; j++) {
-            var safeKeyword = blockedWords[j].trim().toLowerCase().replace(/[^a-z0-9-]/g, '-');
-            
-            
-            if (safeKeyword.length > 2) {
-                querySelectors.push('div[class*="' + safeKeyword + '"]');
-                querySelectors.push('div[id*="' + safeKeyword + '"]');
-            }
-        }
         
         var finalSelectorString = querySelectors.join(', ');
 
         function annihilateAds() {
-    var notices = document.querySelectorAll(finalSelectorString);
+            
+            var notices = document.querySelectorAll(finalSelectorString);
             
             notices.forEach(function(notice) {
                 
@@ -499,10 +500,12 @@ function dashboard_master_internal_adblock_js() {
                 }
                 
                 var text = (notice.innerText || notice.textContent).toLowerCase();
+                
+              
                 for (var i = 0; i < blockedWords.length; i++) {
                     if (text.includes(blockedWords[i])) {
                         notice.classList.add('dm-blocked-notice');
-                        break;
+                        break; 
                     }
                 }
             });

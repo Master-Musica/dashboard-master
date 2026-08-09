@@ -451,21 +451,39 @@ function dashboard_master_internal_adblock_js() {
     $default_words = 'upgrade, premium, limited time offer, discount, sale, unlock all features, learnpress lms is ready, envothemes, addons, superb addons, simple nova, envo one, free woocommerce, pmpro update manager, secure updates for pmpro, license server, seja pro, atualizar agora, crie sem limites, versão pro, obter suporte';
     $saved_words = get_option( 'dashboard_master_adblock_words', $default_words );
     
-
     $words_array = array_filter( array_map( 'trim', explode( ',', strtolower( $saved_words ) ) ) );
-    
- 
     $words_json = wp_json_encode( array_values( $words_array ) );
     ?>
     <script>
     document.addEventListener('DOMContentLoaded', function() {
         var blockedWords = <?php echo $words_json; ?>;
         
+        var querySelectors = [
+            '.wrap > div', 
+            '.notice', 
+            '.updated', 
+            '.error', 
+            'div[class*="notice"]', 
+            'div[class*="message"]'
+        ];
+
+        for (var j = 0; j < blockedWords.length; j++) {
+            var safeKeyword = blockedWords[j].trim().toLowerCase().replace(/[^a-z0-9-]/g, '-');
+            
+            
+            if (safeKeyword.length > 2) {
+                querySelectors.push('div[class*="' + safeKeyword + '"]');
+                querySelectors.push('div[id*="' + safeKeyword + '"]');
+            }
+        }
+        
+        var finalSelectorString = querySelectors.join(', ');
+
         function annihilateAds() {
-            var notices = document.querySelectorAll('.wrap > div, .notice, .updated, .error, div[class*="notice"], div[class*="message"]');
+            var notices = document.querySelectorAll(finalSelectorString);
             
             notices.forEach(function(notice) {
-                // SHIELD: Ignores completely any WordPress Media UI or Popups
+                
                 if (notice.closest('.media-modal') || notice.closest('.media-frame')) {
                     return;
                 }
@@ -507,6 +525,7 @@ function dashboard_master_internal_adblock_js() {
 }
 
 add_filter( 'screen_options_show_screen', 'dashboard_master_hide_screen_options' );
+
 function dashboard_master_hide_screen_options( $show_screen ) {
     $screen = get_current_screen();
     if ( $screen && $screen->id === 'dashboard' ) {

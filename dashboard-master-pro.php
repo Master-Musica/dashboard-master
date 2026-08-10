@@ -302,6 +302,28 @@ function dashboard_master_render_page() {
 // 2. WIDGET INJECTION AND DEFAULT RENDERING
 // ==============================================================================
 
+function dashboard_master_parse_h5p_for_admin( $content ) {
+    
+    if ( strpos( $content, '[h5p ' ) !== false ) {
+        $content = preg_replace_callback( '/\[h5p id=["\']?(\d+)["\']?.*?\]/i', function( $matches ) {
+            $h5p_id = intval( $matches[1] );
+            $embed_url = admin_url( 'admin-ajax.php?action=h5p_embed&id=' . $h5p_id );
+            return '<iframe src="' . esc_url( $embed_url ) . '" frameborder="0" allowfullscreen="allowfullscreen" title="H5P"></iframe>';
+        }, $content );
+    }
+    
+
+     if ( strpos( $content, 'wp:h5p/h5p' ) !== false ) {
+        $content = preg_replace_callback( '//i', function( $matches ) {
+            $h5p_id = intval( $matches[1] );
+            $embed_url = admin_url( 'admin-ajax.php?action=h5p_embed&id=' . $h5p_id );
+            return '<iframe src="' . esc_url( $embed_url ) . '" frameborder="0" allowfullscreen="allowfullscreen" title="H5P"></iframe>';
+        }, $content );
+    }
+
+    return $content;
+}
+
 add_filter('embed_oembed_html', 'dashboard_master_fix_youtube_oembed', 10, 3);
 function dashboard_master_fix_youtube_oembed($html, $url, $attr) {
     if ( strpos( $url, 'youtube.com' ) !== false || strpos( $url, 'youtu.be' ) !== false ) {
@@ -357,6 +379,7 @@ function dashboard_master_clear_dashboard() {
                     function() use ( $widget ) {
                         global $wp_embed;
                         $content = $widget['content'];
+                        $content = dashboard_master_parse_h5p_for_admin( $content );
                         if ( isset( $wp_embed ) ) { $content = $wp_embed->run_shortcode( $content ); $content = $wp_embed->autoembed( $content ); }
                         $content = wpautop( $content );
                         $content = do_shortcode( $content );
@@ -372,6 +395,7 @@ function dashboard_master_content_global_1() {
     global $wp_embed;
     $default = '<p>' . __( 'Welcome to your dashboard.', 'dashboard-master' ) . '</p>';
     $content = get_site_option( 'dashboard_global_welcome', $default );
+    $content = dashboard_master_parse_h5p_for_admin( $content );
     if ( isset( $wp_embed ) ) { $content = $wp_embed->run_shortcode( $content ); $content = $wp_embed->autoembed( $content ); }
     $content = wpautop( $content );
     $content = do_shortcode( $content );
@@ -382,6 +406,7 @@ function dashboard_master_content_global_2() {
     global $wp_embed;
     $default = '<p>' . __( 'Reserved space.', 'dashboard-master' ) . '</p>';
     $content = get_site_option( 'dashboard_global_secondary', $default );
+    $content = dashboard_master_parse_h5p_for_admin( $content );
     if ( isset( $wp_embed ) ) { $content = $wp_embed->run_shortcode( $content ); $content = $wp_embed->autoembed( $content ); }
     $content = wpautop( $content );
     $content = do_shortcode( $content );
@@ -456,11 +481,11 @@ function dashboard_master_internal_adblock_js() {
     $words_array = array_filter( array_map( 'trim', explode( ',', strtolower( $saved_words ) ) ) );
     $words_json = wp_json_encode( array_values( $words_array ) );
     ?>
-   <script>
+    <script>
     document.addEventListener('DOMContentLoaded', function() {
         var blockedWords = <?php echo $words_json; ?>;
         
-        !
+        
         var querySelectors = [
             
             '#wpbody-content > div:not(.wrap):not(#screen-meta):not(#screen-meta-links)',

@@ -149,7 +149,7 @@ function dashboard_master_render_page() {
     $footer_content = get_site_option( 'dashboard_global_footer', $default_footer );
 
    
-    $default_adblock_words = 'upgrade, premium, limited time offer, discount, sale, unlock all features, learnpress lms is ready, envothemes, addons, superb addons, simple nova, envo one, free woocommerce, pmpro update manager, secure updates for pmpro, license server, seja pro, atualizar agora, crie sem limites, versão pro, obter suporte';
+    $default_adblock_words = 'upgrade, premium, limited time offer, discount, sale, unlock all features, learnpress lms is ready, envothemes, addons, superb addons, simple nova, envo one, free woocommerce, pm';
     $adblock_words = get_option( 'dashboard_master_adblock_words', $default_adblock_words );
     ?>
     <div class="wrap">
@@ -201,7 +201,7 @@ function dashboard_master_render_page() {
                     <p><?php esc_html_e( 'Customize the footer text displayed at the bottom of the admin panel across the entire network.', 'dashboard-master' ); ?></p>
                     <?php wp_editor( $footer_content, 'dashboard_global_footer', array( 'textarea_rows' => 3, 'media_buttons' => true ) ); ?>
                 </div>
-                <p style="color: #d63638;"><strong><?php esc_html_e( 'Super Admin Attention:', 'dashboard-master' ); ?></strong> <?php esc_html_e( 'The content of these blocks and footer will be fixed and displayed across all subsites in the network.', 'dashboard-master' ); ?></p>
+                <p style="color: #d63638;"><strong><?php esc_html_e( 'Super Admin Attention:', 'dashboard-master' ); ?></strong> <?php esc_html_e( 'The content of these blocks and footer will be fixed across the entire network.', 'dashboard-master' ); ?></p>
             <?php else : ?>
                 <div class="card" style="max-width: 100%; margin-top: 20px; padding: 15px 20px; background: #f6f7f7;">
                     <h2><?php esc_html_e( 'Global Admin Footer', 'dashboard-master' ); ?></h2>
@@ -240,7 +240,7 @@ function dashboard_master_render_page() {
                                         </label>
                                     <?php endforeach; ?>
                                 </div>
-                                <p class="description" style="margin-top:5px; font-size:12px;"><?php esc_html_e( 'Tip: If "All Users" is checked, the other options will be ignored. If you uncheck all boxes, the widget becomes invisible (Draft Mode).', 'dashboard-master' ); ?></p>
+                                <p class="description" style="margin-top:5px; font-size:12px;"><?php esc_html_e( 'Tip: If "All Users" is checked, the other options will be ignored. If you uncheck all options, no one will see this block.', 'dashboard-master' ); ?></p>
                             </div>
                             
                             <div style="margin-bottom: 15px;">
@@ -309,7 +309,7 @@ function dashboard_master_parse_h5p_for_admin( $content ) {
         $content = preg_replace_callback( '/\[h5p[^>]*?id=["\']?(\d+)["\']?.*?\]/i', function( $matches ) {
             $h5p_id = intval( $matches[1] );
             $embed_url = admin_url( 'admin-ajax.php?action=h5p_embed&id=' . $h5p_id );
-            return '<iframe src="' . esc_url( $embed_url ) . '" frameborder="0" allowfullscreen="allowfullscreen" allow="microphone; camera; display-capture" title="H5P"></iframe>';
+            return '<iframe src="' . esc_url( $embed_url ) . '" frameborder="0" allowfullscreen="allowfullscreen" allow="microphone; camera; display-capture" referrerpolicy="strict-origin-when-cross-origin" title="H5P"></iframe>';
         }, $content );
     }
     
@@ -319,7 +319,7 @@ function dashboard_master_parse_h5p_for_admin( $content ) {
         $content = preg_replace_callback( '/<!--\s*wp:h5p\/h5p.*?(\d+).*?-->/i', function( $matches ) {
             $h5p_id = intval( $matches[1] );
             $embed_url = admin_url( 'admin-ajax.php?action=h5p_embed&id=' . $h5p_id );
-            return '<iframe src="' . esc_url( $embed_url ) . '" frameborder="0" allowfullscreen="allowfullscreen" allow="microphone; camera; display-capture" title="H5P"></iframe>';
+            return '<iframe src="' . esc_url( $embed_url ) . '" frameborder="0" allowfullscreen="allowfullscreen" allow="microphone; camera; display-capture" referrerpolicy="strict-origin-when-cross-origin" title="H5P"></iframe>';
         }, $content );
     }
 
@@ -477,7 +477,7 @@ function dashboard_master_advanced_adblock_css() {
 add_action( 'admin_footer', 'dashboard_master_internal_adblock_js', 999 );
 function dashboard_master_internal_adblock_js() {
     
-    $default_words = 'upgrade, premium, limited time offer, discount, sale, unlock all features, learnpress lms is ready, envothemes, addons, superb addons, simple nova, envo one, free woocommerce, pmpro update manager, secure updates for pmpro, license server, seja pro, atualizar agora, crie sem limites, versão pro, obter suporte';
+    $default_words = 'upgrade, premium, limited time offer, discount, sale, unlock all features, learnpress lms is ready, envothemes, addons, superb addons, simple nova, envo one, free woocommerce, pm';
     $saved_words = get_option( 'dashboard_master_adblock_words', $default_words );
     
     $words_array = array_filter( array_map( 'trim', explode( ',', strtolower( $saved_words ) ) ) );

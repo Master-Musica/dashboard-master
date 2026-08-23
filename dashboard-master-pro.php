@@ -308,22 +308,20 @@ function dashboard_master_parse_h5p_for_admin( $content ) {
         $content = preg_replace_callback( '/\[h5p id=["\']?(\d+)["\']?.*?\]/i', function( $matches ) {
             $h5p_id = intval( $matches[1] );
             $embed_url = admin_url( 'admin-ajax.php?action=h5p_embed&id=' . $h5p_id );
-            return '<iframe src="' . esc_url( $embed_url ) . '" frameborder="0" allowfullscreen="allowfullscreen" title="H5P"></iframe>';
+            return '<iframe src="' . esc_url( $embed_url ) . '" frameborder="0" allowfullscreen="allowfullscreen" allow="microphone; camera; display-capture" title="H5P"></iframe>';
         }, $content );
     }
     
-
      if ( strpos( $content, 'wp:h5p/h5p' ) !== false ) {
         $content = preg_replace_callback( '//i', function( $matches ) {
             $h5p_id = intval( $matches[1] );
             $embed_url = admin_url( 'admin-ajax.php?action=h5p_embed&id=' . $h5p_id );
-            return '<iframe src="' . esc_url( $embed_url ) . '" frameborder="0" allowfullscreen="allowfullscreen" title="H5P"></iframe>';
+            return '<iframe src="' . esc_url( $embed_url ) . '" frameborder="0" allowfullscreen="allowfullscreen" allow="microphone; camera; display-capture" title="H5P"></iframe>';
         }, $content );
     }
 
     return $content;
 }
-
 add_filter('embed_oembed_html', 'dashboard_master_fix_youtube_oembed', 10, 3);
 function dashboard_master_fix_youtube_oembed($html, $url, $attr) {
     if ( strpos( $url, 'youtube.com' ) !== false || strpos( $url, 'youtu.be' ) !== false ) {

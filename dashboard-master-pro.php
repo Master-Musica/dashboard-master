@@ -220,42 +220,49 @@ function dashboard_master_render_page() {
                         $saved_roles = isset( $widget['allowed_roles'] ) ? (array) $widget['allowed_roles'] : array( 'all' );
                     ?>
                         <div class="card widget-item" style="max-width: 100%; margin-bottom: 15px; padding: 15px; border-left: 4px solid #2271b1;">
-                            
-                            <p style="margin-bottom: 15px;">
-                                <label><strong><?php esc_html_e( 'Block Title:', 'dashboard-master' ); ?></strong></label><br>
-                                <input type="text" name="custom_widgets[<?php echo $index; ?>][title]" value="<?php echo esc_attr( $widget['title'] ); ?>" class="widefat">
-                            </p>
 
-                            <div style="margin-bottom: 15px; padding: 10px; background: #f0f0f1; border-radius: 4px; border: 1px solid #c3c4c7;">
-                                <label><strong><?php esc_html_e( 'Visibility Permission (Who can see this?):', 'dashboard-master' ); ?></strong></label><br>
-                                <div style="margin-top: 8px; display: flex; flex-wrap: wrap; gap: 15px;">
-                                    <label>
-                                        <input type="checkbox" name="custom_widgets[<?php echo $index; ?>][allowed_roles][]" value="all" <?php checked( in_array( 'all', $saved_roles ) ); ?>>
-                                        <strong><?php esc_html_e( 'All Users', 'dashboard-master' ); ?></strong>
-                                    </label>
-                                    <?php foreach ( $all_roles as $role_slug => $role_name ) : ?>
-                                        <label>
-                                            <input type="checkbox" name="custom_widgets[<?php echo $index; ?>][allowed_roles][]" value="<?php echo esc_attr( $role_slug ); ?>" <?php checked( in_array( $role_slug, $saved_roles ) ); ?>>
-                                            <?php echo translate_user_role( $role_name ); ?>
-                                        </label>
-                                    <?php endforeach; ?>
-                                </div>
-                                <p class="description" style="margin-top:5px; font-size:12px;"><?php esc_html_e( 'Tip: If "All Users" is checked, the other options will be ignored. If you uncheck all options, no one will see this block.', 'dashboard-master' ); ?></p>
-                            </div>
-                            
-                            <div style="margin-bottom: 15px;">
-                                <label><strong><?php esc_html_e( 'Content:', 'dashboard-master' ); ?></strong></label><br>
-                                <?php 
-                                    $editor_id = 'editor_custom_' . $index;
-                                    wp_editor( 
-                                        $widget['content'], 
-                                        $editor_id, 
-                                        array( 'textarea_name' => 'custom_widgets[' . $index . '][content]', 'textarea_rows' => 5, 'media_buttons' => true ) 
-                                    ); 
-                                ?>
-                            </div>
-                            <button type="button" class="button button-link-delete remove-widget"><?php esc_html_e( 'Remove this Block', 'dashboard-master' ); ?></button>
-                        </div>
+    <p style="margin-bottom: 15px;">
+        <label for="custom_widget_<?php echo $index; ?>_title"><strong><?php esc_html_e( 'Block Title:', 'dashboard-master' ); ?></strong></label><br>
+        <input id="custom_widget_<?php echo $index; ?>_title" type="text" name="custom_widgets[<?php echo $index; ?>][title]" value="<?php echo esc_attr( $widget['title'] ); ?>" class="widefat">
+    </p>
+
+    <div style="margin-bottom: 15px; padding: 10px; background: #f0f0f1; border-radius: 4px; border: 1px solid #c3c4c7;">
+        <label><strong><?php esc_html_e( 'Visibility Permission (Who can see this?):', 'dashboard-master' ); ?></strong></label><br>
+        <div style="margin-top: 8px; display: flex; flex-wrap: wrap; gap: 15px;">
+            <?php
+                // All Users checkbox
+                $all_id = 'custom_widget_' . $index . '_role_all';
+            ?>
+            <input id="<?php echo esc_attr( $all_id ); ?>" type="checkbox" name="custom_widgets[<?php echo $index; ?>][allowed_roles][]" value="all" <?php checked( in_array( 'all', $saved_roles ) ); ?>>
+            <label for="<?php echo esc_attr( $all_id ); ?>"><strong><?php esc_html_e( 'All Users', 'dashboard-master' ); ?></strong></label>
+
+            <?php foreach ( $all_roles as $role_slug => $role_name ) :
+                $role_id = 'custom_widget_' . $index . '_role_' . $role_slug;
+                $checked = in_array( $role_slug, $saved_roles );
+            ?>
+                <input id="<?php echo esc_attr( $role_id ); ?>" type="checkbox" name="custom_widgets[<?php echo $index; ?>][allowed_roles][]" value="<?php echo esc_attr( $role_slug ); ?>" <?php checked( $checked ); ?>>
+                <label for="<?php echo esc_attr( $role_id ); ?>"><?php echo translate_user_role( $role_name ); ?></label>
+            <?php endforeach; ?>
+        </div>
+        <p class="description" style="margin-top:5px; font-size:12px;"><?php esc_html_e( 'Tip: If "All Users" is checked, the other options will be ignored. If you uncheck...', 'dashboard-master' ); ?></p>
+    </div>
+
+    <div style="margin-bottom: 15px;">
+        <?php
+            $editor_id = 'editor_custom_' . $index;
+        ?>
+        <label for="<?php echo esc_attr( $editor_id ); ?>"><strong><?php esc_html_e( 'Content:', 'dashboard-master' ); ?></strong></label><br>
+        <?php
+            wp_editor(
+                $widget['content'],
+                $editor_id,
+                array( 'textarea_name' => 'custom_widgets[' . $index . '][content]', 'textarea_rows' => 5, 'media_buttons' => true )
+            );
+        ?>
+    </div>
+
+    <button type="button" class="button button-link-delete remove-widget"><?php esc_html_e( 'Remove this Block', 'dashboard-master' ); ?></button>
+</div>
                     <?php endforeach; ?>
                 <?php endif; ?>
             </div>

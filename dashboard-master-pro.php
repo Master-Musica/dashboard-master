@@ -2,8 +2,8 @@
 /*
 Plugin Name: Dashboard Master - Clean and Custom Dashboard Multisite
 Plugin URI: https://www.mastermusica.com.br
-Description: Widget manager. 2 fixed global blocks (Super Admin) and up to 6 local blocks. Fixes for videos and embeds.
-Version: 1.1
+Description: Widget manager. 2 fixed global blocks (Super Admin) and up to 6 local blocks. Dynamic Left Menu Manager. Fixes for videos and embeds.
+Version: 1.2
 Author: Master Musica
 Author URI: https://www.mastermusica.com.br
 License: GPLv2 or later
@@ -36,7 +36,7 @@ function dashboard_master_fix_youtube_error_153() {
 }
 
 // ==============================================================================
-// 1. VISUAL WIDGET MANAGER
+// 1. VISUAL WIDGET MANAGER & SETTINGS SAVER
 // ==============================================================================
 
 add_action( 'admin_menu', 'dashboard_master_add_menu' );
@@ -90,6 +90,15 @@ function dashboard_master_save_settings() {
             update_option( 'dashboard_master_adblock_words', $words_clean );
         }
 
+        // SAVE HIDDEN MENUS (DYNAMIC MENU MANAGER)
+        if ( isset( $_POST['dashboard_hidden_menus'] ) && is_array( $_POST['dashboard_hidden_menus'] ) ) {
+            $hidden_menus = array_map( 'sanitize_text_field', wp_unslash( $_POST['dashboard_hidden_menus'] ) );
+            update_option( 'dashboard_hidden_menus', $hidden_menus );
+        } else {
+            // Se o formulário foi enviado e o array não existe, o usuário desmarcou todos os menus
+            update_option( 'dashboard_hidden_menus', array() );
+        }
+
         // LOCAL SAVING
         $sanitized_widgets = array();
         if ( isset( $_POST['custom_widgets'] ) && is_array( $_POST['custom_widgets'] ) ) {
@@ -136,7 +145,7 @@ function dashboard_master_render_page() {
     $widgets = get_option( 'dashboard_local_widgets', array() );
     $widget_count = is_array( $widgets ) ? count( $widgets ) : 0;
     
-    global $wp_roles;
+    global $wp_roles, $menu;
     if ( ! isset( $wp_roles ) ) { $wp_roles = new WP_Roles(); }
     $all_roles = $wp_roles->get_names();
     
@@ -148,16 +157,17 @@ function dashboard_master_render_page() {
     $global_2_content = get_site_option( 'dashboard_global_secondary', $default_global_2 );
     $footer_content = get_site_option( 'dashboard_global_footer', $default_footer );
 
-   
     $default_adblock_words = 'upgrade, premium, limited time offer, discount, sale, unlock all features, learnpress lms is ready, envothemes, addons, superb addons, simple nova, envo one, free woocommerce, pm';
     $adblock_words = get_option( 'dashboard_master_adblock_words', $default_adblock_words );
+    
+    $hidden_menus = get_option( 'dashboard_hidden_menus', array() );
     ?>
     <div class="wrap">
         <h1><?php esc_html_e( 'Dashboard Widget Manager', 'dashboard-master' ); ?></h1>
         <p><?php esc_html_e( 'Customize the content displayed on your admin dashboard homepage.', 'dashboard-master' ); ?></p>
 
         <?php if ( isset( $_GET['saved'] ) ) : ?>
-            <div class="updated notice is-dismissible"><p><strong><?php esc_html_e( 'Widgets updated successfully!', 'dashboard-master' ); ?></strong></p></div>
+            <div class="updated notice is-dismissible"><p><strong><?php esc_html_e( 'Settings updated successfully!', 'dashboard-master' ); ?></strong></p></div>
         <?php endif; ?>
         <?php if ( isset( $_GET['added'] ) ) : ?>
             <div class="updated notice is-dismissible" style="border-left-color: #46b450;"><p><strong><?php esc_html_e( 'New block added at the bottom of the page! Fill it out below.', 'dashboard-master' ); ?></strong></p></div>
@@ -244,7 +254,7 @@ function dashboard_master_render_page() {
                 <label for="<?php echo esc_attr( $role_id ); ?>"><?php echo translate_user_role( $role_name ); ?></label>
             <?php endforeach; ?>
         </div>
-        <p class="description" style="margin-top:5px; font-size:12px;"><?php esc_html_e( 'Tip: If "All Users" is checked, the other options will be ignored. If you uncheck...', 'dashboard-master' ); ?></p>
+        <p class="description" style="margin-top:5px; font-size:12px;"><?php esc_html_e( 'Tip: If "All Users" is checked, the other options will be ignored.', 'dashboard-master' ); ?></p>
     </div>
 
     <div style="margin-bottom: 15px;">
@@ -274,6 +284,44 @@ function dashboard_master_render_page() {
                     <span style="color: #d63638; font-weight: bold;">⚠️ <?php esc_html_e( 'Limit of 6 local blocks reached.', 'dashboard-master' ); ?></span>
                 <?php endif; ?>
             </p>
+
+            <hr style="margin-top: 30px;">
+            
+            <!-- INÍCIO: NOVO GERENCIADOR DINÂMICO DE MENUS -->
+            <h2>👁️ <?php esc_html_e( 'Menu Manager (Hide Items)', 'dashboard-master' ); ?></h2>
+            <p><?php esc_html_e( 'Select the menu items you want to HIDE from the left sidebar. This list dynamically captures all active menus.', 'dashboard-master' ); ?></p>
+            
+            <div style="background: #fff; border: 1px solid #c3c4c7; padding: 15px; border-radius: 4px; max-height: 300px; overflow-y: auto; margin-bottom: 20px;">
+                <?php 
+                if ( ! empty( $menu ) ) {
+                    foreach ( $menu as $m ) {
+                        // Ignora separadores visuais do WordPress
+                        if ( isset( $m[4] ) && strpos( $m[4], 'wp-menu-separator' ) !== false ) {
+                            continue;
+                        }
+                        
+                        $menu_slug = $m[2];
+                        $menu_name = wp_strip_all_tags( $m[0] ); // Remove bolhas de notificação HTML do nome
+                        
+                        if ( empty( $menu_name ) ) continue;
+                        
+                        // Trava de segurança para não sumir com a própria página do plugin
+                        $is_disabled = ( $menu_slug === 'dashboard-widget-manager' ) ? 'disabled' : '';
+                        $is_checked = in_array( $menu_slug, $hidden_menus ) ? 'checked' : '';
+                        ?>
+                        <label style="display: inline-block; width: 32%; min-width: 250px; margin-bottom: 12px;">
+                            <input type="checkbox" name="dashboard_hidden_menus[]" value="<?php echo esc_attr( $menu_slug ); ?>" <?php echo $is_checked; ?> <?php echo $is_disabled; ?>>
+                            <strong><?php echo esc_html( $menu_name ); ?></strong> 
+                            <span style="color:#888; font-size:11px; display:block; margin-left: 23px;">(<?php echo esc_html( $menu_slug ); ?>)</span>
+                        </label>
+                        <?php
+                    }
+                } else {
+                    echo '<p>' . esc_html__( 'No menus found.', 'dashboard-master' ) . '</p>';
+                }
+                ?>
+            </div>
+            <!-- FIM: GERENCIADOR DINÂMICO DE MENUS -->
 
             <hr style="margin-top: 30px;">
 
@@ -315,24 +363,23 @@ function dashboard_master_parse_h5p_for_admin( $content ) {
     if ( strpos( $content, '[h5p ' ) !== false ) {
         $content = preg_replace_callback( '/\[h5p[^>]*?id=["\']?(\d+)["\']?.*?\]/i', function( $matches ) {
             $h5p_id = intval( $matches[1] );
-            $embed_url = admin_url( 'admin-ajax.php?action=h5p_embed&id=' . $h5p_id );
-            return '<iframe src="' . esc_url( $embed_url ) . '" frameborder="0" allowfullscreen="allowfullscreen" allow="microphone; camera; display-capture" referrerpolicy="strict-origin-when-cross-origin" title="H5P"></iframe>';
+            // Injeção de "nocache" para evitar quebra de JS por plugins de otimização
+            $embed_url = admin_url( 'admin-ajax.php?action=h5p_embed&id=' . $h5p_id . '&nocache=' . time() );
+            return '<iframe src="' . esc_url( $embed_url ) . '" width="100%" height="600" frameborder="0" allowfullscreen="allowfullscreen" allow="microphone *; camera *; display-capture *" referrerpolicy="strict-origin-when-cross-origin" class="h5p-iframe" title="H5P"></iframe>';
         }, $content );
     }
     
     // 2. Captura do Bloco Gutenberg (Expressão Regular Ultra-Robusta)
     if ( strpos( $content, 'wp:h5p/h5p' ) !== false ) {
-        // Procura pelo bloco wp:h5p e extrai diretamente o número (ID) sem depender de nomes de propriedades
         $content = preg_replace_callback( '/<!--\s*wp:h5p\/h5p.*?(\d+).*?-->/i', function( $matches ) {
             $h5p_id = intval( $matches[1] );
-            $embed_url = admin_url( 'admin-ajax.php?action=h5p_embed&id=' . $h5p_id );
-            return '<iframe src="' . esc_url( $embed_url ) . '" frameborder="0" allowfullscreen="allowfullscreen" allow="microphone; camera; display-capture" referrerpolicy="strict-origin-when-cross-origin" title="H5P"></iframe>';
+            $embed_url = admin_url( 'admin-ajax.php?action=h5p_embed&id=' . $h5p_id . '&nocache=' . time() );
+            return '<iframe src="' . esc_url( $embed_url ) . '" frameborder="0" allowfullscreen="allowfullscreen" allow="microphone; camera; display-capture" referrerpolicy="strict-origin-when-cross-origin" style="width: 100%; height: 600px;"></iframe>';
         }, $content );
     }
 
     return $content;
 }
-
 add_filter('embed_oembed_html', 'dashboard_master_fix_youtube_oembed', 10, 3);
 function dashboard_master_fix_youtube_oembed($html, $url, $attr) {
     if ( strpos( $url, 'youtube.com' ) !== false || strpos( $url, 'youtu.be' ) !== false ) {
@@ -436,7 +483,6 @@ add_action( 'admin_head-index.php', 'dashboard_master_remove_dashboard_notices',
 function dashboard_master_remove_dashboard_notices() {
     remove_all_actions( 'admin_notices' ); 
     remove_all_actions( 'all_admin_notices' ); 
-
 }
 
 add_action( 'admin_init', 'dashboard_master_remove_core_notices_users' );
@@ -463,18 +509,14 @@ function dashboard_master_add_xray_button( $wp_admin_bar ) {
 add_action( 'admin_head', 'dashboard_master_advanced_adblock_css', 999 );
 function dashboard_master_advanced_adblock_css() {
     echo '<style>
-        
         body:not(.dm-show-notices) .dm-blocked-notice { 
             display: none !important; 
         }        
-        
         body.dm-show-notices .dm-blocked-notice { 
             display: block !important; 
             border-left-color: #d63638 !important; 
             opacity: 0.95; 
         }
-
-        
         #dashboard-widgets-wrap { margin-top: 15px !important; }
         .custom-widget-content img { max-width: 100% !important; height: auto; border-radius: 8px; }
         .custom-widget-content iframe { width: 100% !important; aspect-ratio: 16 / 9; border-radius: 8px; min-height: 250px; }
@@ -494,14 +536,9 @@ function dashboard_master_internal_adblock_js() {
     document.addEventListener('DOMContentLoaded', function() {
         var blockedWords = <?php echo $words_json; ?>;
         
-        
         var querySelectors = [
-            
             '#wpbody-content > div:not(.wrap):not(#screen-meta):not(#screen-meta-links)',
-            
-            
             '.wrap > div:not(#dashboard-widgets-wrap):not(#poststuff):not(.card):not(#list-widgets-container)',
-            
             '[class*="notice"]', 
             '[class*="message"]',
             '[class*="alert"]',
@@ -519,11 +556,9 @@ function dashboard_master_internal_adblock_js() {
         var finalSelectorString = querySelectors.join(', ');
 
         function annihilateAds() {
-            
             var notices = document.querySelectorAll(finalSelectorString);
             
             notices.forEach(function(notice) {
-                
                 if (notice.closest('.media-modal') || notice.closest('.media-frame')) {
                     return;
                 }
@@ -535,7 +570,6 @@ function dashboard_master_internal_adblock_js() {
                 
                 var text = (notice.innerText || notice.textContent).toLowerCase();
                 
-              
                 for (var i = 0; i < blockedWords.length; i++) {
                     if (text.includes(blockedWords[i])) {
                         notice.classList.add('dm-blocked-notice');
@@ -583,8 +617,145 @@ function dashboard_master_remove_help_tabs() {
         $screen->remove_help_tabs(); 
     }
 }
+
+//===============================================================================
+// 4. Woocommerce Dashboard Off
+//===============================================================================
+
+// 1. Disable the WooCommerce block that prevents customers from accessing wp-admin
+add_filter( 'woocommerce_prevent_admin_access', '__return_false' );
+
+// 2. Force redirection to the admin dashboard after login via WooCommerce form
+add_filter( 'woocommerce_login_redirect', 'redirect_user_to_admin_dashboard', 9999, 2 );
+function redirect_user_to_admin_dashboard( $redirect, $user ) {
+    if ( ! is_wp_error( $user ) && isset( $user->roles ) && is_array( $user->roles ) ) {
+        return admin_url(); 
+    }
+    return $redirect;
+}
+
+// 3. Force redirection if the login is done via the native wp-login.php screen
+add_filter( 'login_redirect', 'redirect_wp_login_to_admin_dashboard', 9999, 3 );
+function redirect_wp_login_to_admin_dashboard( $redirect_to, $request, $user ) {
+    if ( ! is_wp_error( $user ) && isset( $user->roles ) && is_array( $user->roles ) ) {
+        return admin_url();
+    }
+    return $redirect_to;
+} // CORRIGIDO: Chave de fechamento adicionada aqui.
+
+// ============================================================================
+// 5. DYNAMIC MENU MANAGER
+// ============================================================================
+
+add_action( 'admin_menu', 'dashboard_master_hide_selected_menus', 999 );
+function dashboard_master_hide_selected_menus() {
+    
+    // Recupera o array de menus ocultados do banco de dados
+    $hidden_menus = get_option( 'dashboard_hidden_menus', array() );
+    
+    if ( ! empty( $hidden_menus ) ) {
+        foreach ( $hidden_menus as $menu_slug ) {
+            // Trava de segurança no backend para garantir que não oculte o próprio painel
+            if ( $menu_slug !== 'dashboard-widget-manager' ) {
+                remove_menu_page( $menu_slug );
+            }
+        }
+    }
+}
+
+//==============================================================================
+// 6. LEFT DASHBOARD MENU PER USER ROLE WITH PLUGIN MASTER MEMBROS
+//==============================================================================
+
+add_action( 'admin_menu', 'dashboard_master_hide_menus_by_membership_level', 999 );
+function dashboard_master_hide_menus_by_membership_level() {
+    // Super admins e administradores veem tudo
+    if ( current_user_can( 'manage_options' ) || is_super_admin() ) {
+        return;
+    }
+
+    $current_user_id = get_current_user_id();
+
+    // EXEMPLO DE REGRA PERSONALIZADA:
+    // Se o usuário NÃO tiver o nível de ID 5 (por exemplo, um nível avançado), ocultamos o menu de Cursos/LearnPress
+    // Certifique-se de substituir '5' pelo ID real do nível cadastrado no seu Membership Master
+    $nivel_exclusivo_id = 5; 
+
+    if ( ! function_exists('mm_user_has_level') || ! mm_user_has_level( $current_user_id, $nivel_exclusivo_id ) ) {
+        // Oculte o slug do menu que deseja restringir para este nível básico
+        remove_menu_page( 'learn_press' ); // Exemplo para o LearnPress
+        // remove_menu_page( 'edit.php?post_type=product' ); // Exemplo para o WooCommerce (Produtos)
+    }
+}
 // ==============================================================================
-// 4. FOOTER CUSTOMIZATION
+// 7. CUSTOM ADMIN BAR LOGO (REPLACE WORDPRESS LOGO)
+// ==============================================================================
+add_action( 'admin_bar_menu', 'dashboard_master_replace_wp_logo', 11 );
+function dashboard_master_replace_wp_logo( $wp_admin_bar ) {
+    // Remove o nó padrão do logotipo do WordPress (wp-logo)
+    $wp_admin_bar->remove_node( 'wp-logo' );
+
+    // Adiciona a sua própria logo/marca
+    $wp_admin_bar->add_node( array(
+        'id'    => 'master-custom-logo',
+        'title' => '<span class="ab-icon dashicons-format-audio" style="display:none;"></span><img src="URL_DA_SUA_IMAGEM_AQUI.png" alt="Logo" style="width: 20px; height: 20px; vertical-align: middle; margin-top: -2px; border-radius: 50%;">',
+        'href'  => admin_url(), // Link para onde vai ao clicar (painel principal)
+        'meta'  => array(
+            'title' => __( 'Master Musica', 'dashboard-master' ),
+        ),
+    ) );
+}
+
+// Estilo CSS para ajustar a exibição da logo na barra de topo
+add_action( 'admin_head', 'dashboard_master_logo_css' );
+add_action( 'wp_head', 'dashboard_master_logo_css' ); // Garante o estilo também no front-end se a barra aparecer lá
+function dashboard_master_logo_css() {
+    echo '<style>
+        #wpadminbar #wp-admin-bar-master-custom-logo > .ab-item {
+            padding: 0 10px !important;
+        }
+        #wpadminbar #wp-admin-bar-master-custom-logo img {
+            max-height: 20px;
+            width: auto;
+            object-fit: contain;
+        }
+    </style>';
+}
+// ==============================================================================
+// 8. CUSTOM LOGIN PAGE LOGO & STYLING
+// ==============================================================================
+
+// Altera a imagem do logotipo na tela de login com CSS
+add_action( 'login_head', 'dashboard_master_custom_login_logo' );
+function dashboard_master_custom_login_logo() {
+    $logo_url = 'URL_DA_SUA_IMAGEM_AQUI.png'; // Cole aqui o link direto da sua logo
+    
+    echo '<style type="text/css">
+        #login h1 a, .login h1 a {
+            background-image: url(' . esc_url( $logo_url ) . ') !important;
+            height: 80px;            /* Ajuste a altura conforme o formato da sua logo */
+            width: 300px;           /* Ajuste a largura conforme necessário */
+            background-size: contain !important;
+            background-repeat: no-repeat !important;
+            background-position: center center !important;
+            margin-bottom: 20px;
+        }
+    </style>';
+}
+
+// Altera o link do logotipo para redirecionar para o seu site (em vez de wordpress.org)
+add_filter( 'login_headerurl', 'dashboard_master_login_logo_url' );
+function dashboard_master_login_logo_url() {
+    return home_url(); // Redireciona para a página inicial do site atual
+}
+
+// Altera o texto do tooltip (frase que aparece ao passar o mouse em cima da logo)
+add_filter( 'login_headertext', 'dashboard_master_login_logo_title' );
+function dashboard_master_login_logo_title() {
+    return get_bloginfo( 'name' ); // Exibe o nome do seu site
+}
+// ==============================================================================
+//9. FOOTER CUSTOMIZATION
 // ==============================================================================
 
 add_filter( 'admin_footer_text', 'dashboard_master_custom_footer' );

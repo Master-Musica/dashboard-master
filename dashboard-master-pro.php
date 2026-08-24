@@ -374,7 +374,7 @@ function dashboard_master_parse_h5p_for_admin( $content ) {
         $content = preg_replace_callback( '/<!--\s*wp:h5p\/h5p.*?(\d+).*?-->/i', function( $matches ) {
             $h5p_id = intval( $matches[1] );
             $embed_url = admin_url( 'admin-ajax.php?action=h5p_embed&id=' . $h5p_id . '&nocache=' . time() );
-            return '<iframe src="' . esc_url( $embed_url ) . '" frameborder="0" allowfullscreen="allowfullscreen" allow="microphone; camera; display-capture" referrerpolicy="strict-origin-when-cross-origin" style="width: 100%; height: 600px;"></iframe>';
+            return '<iframe src="' . esc_url( $embed_url ) . '" width="100%" height="600" frameborder="0" allowfullscreen="allowfullscreen" allow="microphone *; camera *; display-capture *" referrerpolicy="strict-origin-when-cross-origin" class="h5p-iframe" title="H5P"></iframe>';
         }, $content );
     }
 

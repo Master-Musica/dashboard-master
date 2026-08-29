@@ -16,15 +16,25 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // ==============================================================================
-// LOAD TEXT DOMAIN (TRANSLATIONS)
+// LOAD TEXT DOMAIN & AUTO-COMPILE TRANSLATIONS (COMPATÍVEL COM MU-PLUGINS)
 // ==============================================================================
 add_action( 'plugins_loaded', 'dashboard_master_load_textdomain' );
 function dashboard_master_load_textdomain() {
-    load_plugin_textdomain( 
-        'dashboard-master', 
-        false, 
-        dirname( plugin_basename( __FILE__ ) ) . '/languages/' 
-    );
+    $locale  = determine_locale(); // Identifica pt_BR, pt_PT, etc.
+    $po_file = dirname( __FILE__ ) . '/languages/dashboard-master-' . $locale . '.po';
+    $mo_file = dirname( __FILE__ ) . '/languages/dashboard-master-' . $locale . '.mo';
+
+    // Compila automaticamente se houver o script compilador e o .po for alterado
+    if ( function_exists( 'master_compile_po_to_mo' ) && file_exists( $po_file ) ) {
+        if ( ! file_exists( $mo_file ) || filemtime( $po_file ) > filemtime( $mo_file ) ) {
+            master_compile_po_to_mo( $po_file, $mo_file );
+        }
+    }
+
+    // CARREGAMENTO ABSOLUTO: Essencial para funcionar na pasta mu-plugins!
+    if ( file_exists( $mo_file ) ) {
+        load_textdomain( 'dashboard-master', $mo_file );
+    }
 }
 
 // ==============================================================================
@@ -103,7 +113,7 @@ function dashboard_master_save_settings() {
         $sanitized_widgets = array();
         if ( isset( $_POST['custom_widgets'] ) && is_array( $_POST['custom_widgets'] ) ) {
             foreach ( $_POST['custom_widgets'] as $widget ) {
-                if ( count( $sanitized_widgets ) >= 6 ) break;
+                if ( count( $sanitized_widgets ) >= 12 ) break;
 
                 $title = sanitize_text_field( wp_unslash( $widget['title'] ) );
                 $content_raw = wp_unslash( $widget['content'] ); 
@@ -124,7 +134,7 @@ function dashboard_master_save_settings() {
         }
 
         if ( isset( $_POST['add_new_block'] ) && $_POST['add_new_block'] === '1' ) {
-            if ( count( $sanitized_widgets ) < 6 ) {
+            if ( count( $sanitized_widgets ) < 12 ) {
                 $sanitized_widgets[] = array( 'title' => '', 'content' => '', 'allowed_roles' => array('all') );
                 update_option( 'dashboard_local_widgets', $sanitized_widgets );
                 wp_redirect( add_query_arg( 'added', 'true', remove_query_arg( array('saved', 'limit_reached'), wp_get_referer() ) ) );
@@ -221,7 +231,7 @@ function dashboard_master_render_page() {
                 </div>
             <?php endif; ?>
 
-            <h2 style="margin-top: 30px;"><?php printf( esc_html__( 'Your Local Blocks (%d/6)', 'dashboard-master' ), $widget_count ); ?></h2>
+            <h2 style="margin-top: 30px;"><?php printf( esc_html__( 'Your Local Blocks (%d/12)', 'dashboard-master' ), $widget_count ); ?></h2>
             <p><strong><?php esc_html_e( 'Tip:', 'dashboard-master' ); ?></strong> <?php esc_html_e( 'These blocks will only appear on this specific site\'s dashboard. Control who can see them below.', 'dashboard-master' ); ?></p>
             
             <div id="list-widgets-container">
@@ -278,10 +288,10 @@ function dashboard_master_render_page() {
             </div>
 
             <p style="margin-top: 20px;">
-                <?php if ( $widget_count < 6 ) : ?>
+                <?php if ( $widget_count < 12 ) : ?>
                     <button type="submit" name="add_new_block" value="1" class="button button-secondary"><?php esc_html_e( '+ Add New Local Block', 'dashboard-master' ); ?></button>
                 <?php else : ?>
-                    <span style="color: #d63638; font-weight: bold;">⚠️ <?php esc_html_e( 'Limit of 6 local blocks reached.', 'dashboard-master' ); ?></span>
+                    <span style="color: #d63638; font-weight: bold;">⚠️ <?php esc_html_e( 'Limit of 12 local blocks reached.', 'dashboard-master' ); ?></span>
                 <?php endif; ?>
             </p>
 
@@ -412,7 +422,7 @@ function dashboard_master_clear_dashboard() {
     $user_roles = (array) $current_user->roles;
 
     if ( ! empty( $widgets ) && is_array( $widgets ) ) {
-        $widgets = array_slice( $widgets, 0, 6 ); 
+        $widgets = array_slice( $widgets, 0, 12 ); 
         
         foreach ( $widgets as $index => $widget ) {
             
@@ -698,7 +708,7 @@ function dashboard_master_replace_wp_logo( $wp_admin_bar ) {
     // Adiciona a sua própria logo/marca
     $wp_admin_bar->add_node( array(
         'id'    => 'master-custom-logo',
-        'title' => '<span class="ab-icon dashicons-format-audio" style="display:none;"></span><img src="URL_DA_SUA_IMAGEM_AQUI.png" alt="Logo" style="width: 20px; height: 20px; vertical-align: middle; margin-top: -2px; border-radius: 50%;">',
+        'title' => '<span class="ab-icon dashicons-format-audio" style="display:none;"></span><img src=https://www.mastermusica.com.br/web/image/website/1/logo/Master%20Musica?unique=56425d6 alt="Logo" style="width: 90px; height: 90px; vertical-align: middle; margin-top: -2px; border-radius: 50%;">',
         'href'  => admin_url(), // Link para onde vai ao clicar (painel principal)
         'meta'  => array(
             'title' => __( 'Master Musica', 'dashboard-master' ),
@@ -769,3 +779,143 @@ function dashboard_master_custom_footer() {
 }
 
 add_filter( 'update_footer', '__return_empty_string', 9999 );
+
+//===============================================================================
+// 10. Compila um arquivo .po para o formato binário .mo de forma robusta e nativa.
+//===============================================================================
+
+/**
+ * @param string $po_file Caminho absoluto do arquivo .po de origem.
+ * @param string $mo_file Caminho absoluto do arquivo .mo de destino.
+ * @return bool Retorna true em caso de sucesso, false se falhar.
+ */
+function master_compile_po_to_mo( $po_file, $mo_file ) {
+    if ( ! file_exists( $po_file ) ) {
+        return false;
+    }
+
+    $po_content = file_get_contents( $po_file );
+    $lines      = explode( "\n", $po_content );
+    $entries    = array();
+    
+    $current_msgid  = null;
+    $current_msgstr = null;
+    $in_id          = false;
+    $in_str         = false;
+
+    // Parser robusto para ler o arquivo .po (suporta blocos de texto e quebras de linha)
+    foreach ( $lines as $line ) {
+        $line = trim( $line );
+
+        // Ignora comentários e linhas vazias
+        if ( empty( $line ) || strpos( $line, '#' ) === 0 ) {
+            continue;
+        }
+
+        // Detecta o início de um msgid
+        if ( strpos( $line, 'msgid' ) === 0 ) {
+            if ( null !== $current_msgid && null !== $current_msgstr ) {
+                $entries[ $current_msgid ] = $current_msgstr;
+            }
+            $in_id  = true;
+            $in_str = false;
+            if ( preg_match( '/^msgid\s+"(.*)"$/', $line, $matches ) ) {
+                $current_msgid = $matches[1];
+            } else {
+                $current_msgid = '';
+            }
+        }
+        // Detecta o início de um msgstr
+        elseif ( strpos( $line, 'msgstr' ) === 0 ) {
+            $in_id  = false;
+            $in_str = true;
+            if ( preg_match( '/^msgstr\s+"(.*)"$/', $line, $matches ) ) {
+                $current_msgstr = $matches[1];
+            } else {
+                $current_msgstr = '';
+            }
+        }
+        // Captura linhas de continuação (múltiplas linhas entre aspas)
+        elseif ( strpos( $line, '"' ) === 0 ) {
+            if ( preg_match( '/^"(.*)"$/', $line, $matches ) ) {
+                $content = $matches[1];
+                if ( $in_id ) {
+                    $current_msgid .= $content;
+                } elseif ( $in_str ) {
+                    $current_msgstr .= $content;
+                }
+            }
+        }
+    }
+
+    // Adiciona o último termo capturado
+    if ( null !== $current_msgid && null !== $current_msgstr ) {
+        $entries[ $current_msgid ] = $current_msgstr;
+    }
+
+    // Aplica o unescape de barras (reverte quebras de linha '\n' e aspas escapadas)
+    $clean_entries = array();
+    foreach ( $entries as $id => $str ) {
+        $id                   = stripcslashes( $id );
+        $str                  = stripcslashes( $str );
+        $clean_entries[ $id ] = $str;
+    }
+
+    // Ordenação alfabética obrigatória para indexação binária do Gettext
+    ksort( $clean_entries );
+
+    $count = count( $clean_entries );
+
+    // Definição dos offsets binários do cabeçalho MO (cabeçalho padrão consome 28 bytes)
+    $original_table_offset    = 28;
+    $translation_table_offset = $original_table_offset + ( $count * 8 );
+
+    $original_bytes    = '';
+    $translation_bytes = '';
+
+    $original_offsets    = array();
+    $translation_offsets = array();
+
+    $current_string_offset = $translation_table_offset + ( $count * 8 );
+
+    // Gera tabela de posições e bytes para as strings originais (msgid)
+    foreach ( $clean_entries as $id => $str ) {
+        $id_len                 = strlen( $id );
+        $original_offsets[]     = array( $id_len, $current_string_offset );
+        $original_bytes        .= $id . "\0";
+        $current_string_offset   += $id_len + 1;
+    }
+
+    // Gera tabela de posições e bytes para as strings traduzidas (msgstr)
+    foreach ( $clean_entries as $id => $str ) {
+        $str_len                 = strlen( $str );
+        $translation_offsets[]   = array( $str_len, $current_string_offset );
+        $translation_bytes      .= $str . "\0";
+        $current_string_offset   += $str_len + 1;
+    }
+
+    // Monta o cabeçalho binário (Little Endian de 32 bits)
+    $output = pack( 'V*',
+        0x950412de,                // Magic Number
+        0,                         // Revisão
+        $count,                    // Quantidade total de termos
+        $original_table_offset,    // Offset da tabela original
+        $translation_table_offset, // Offset da tabela traduzida
+        0,                         // Tamanho da tabela Hash (desativada)
+        0                          // Offset da tabela Hash
+    );
+
+    // Concatena as tabelas de indexação
+    foreach ( $original_offsets as $offset ) {
+        $output .= pack( 'V*', $offset, $offset[1] );
+    }
+    foreach ( $translation_offsets as $offset ) {
+        $output .= pack( 'V*', $offset, $offset[1] );
+    }
+
+    // Concatena as strings literais terminadas em null-byte
+    $output .= $original_bytes;
+    $output .= $translation_bytes;
+
+    return file_put_contents( $mo_file, $output ) !== false;
+}

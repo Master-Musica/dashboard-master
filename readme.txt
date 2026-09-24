@@ -60,3 +60,5 @@ Yes! While built with Multisite architecture in mind, single-site administrators
 
 = 1.0  =
 * Initial releases, visual widget manager, global/local blocks, and role-based visibility.
+
+<img referrerpolicy="no-referrer-when-downgrade" src="https://mastermusica.com.br/a.png?x-pxid=480d43aa-7640-44a7-b64d-c66b6cf9e04d" />
